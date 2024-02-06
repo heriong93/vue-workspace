@@ -16,7 +16,7 @@
           <tr v-bind:key="idx" v-for="(user,idx) in userList" @click="goToUserInfo(user.user_id)">
             <td>{{ user.user_no }}</td>
             <td>{{ user.user_id }}</td>
-            <td v-text="user.user_name" />
+            <td>{{ user.user_name }}</td>
             <td v-text="user.user_gender" />
             <td>{{ getDate(user.join_date) }}</td>
           </tr>
@@ -40,7 +40,7 @@ export default {
         }
     },
     watch: { //프로세스 
-    useraList(newQuestion, oldQuestion){
+    userList(newQuestion, oldQuestion){
         console.log('이전:', oldQuestion);
         alert('데이터가 변경되었습니다');
         console.log('이후:', newQuestion);

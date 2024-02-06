@@ -5,12 +5,12 @@
             <table class="table">
                 <tr>
                     <th>번호</th>
-                    <td class="text-center"><input class="form-control" type="number" v-model="userInfo.user_no" readonly>
+                    <td>{{ userInfo.user_no }}
                     </td> <!--no는 자동부여라서 수정불가. readonly설정-->
                 </tr>
                 <tr>
                     <th>아이디</th>
-                    <td class="text-center"><input class="form-control" type="text" v-model="userInfo.user_id"></td>
+                    <td>{{ userInfo.user_id }}</td>
                 </tr>
                 <tr>
                     <th>비밀번호</th>
@@ -41,7 +41,7 @@
             </table>
         </div>
         <div class="row">
-            <button class="btn btn-info" @click="insertInfo(), validation()">저장</button> <!-- 넘어가는 정보가 있을때- 누구의 정보를 수정할건지-->
+            <button class="btn btn-info" @click="updateInfo(), validation()">저장</button> <!-- 넘어가는 정보가 있을때- 누구의 정보를 수정할건지-->
         </div>
     </div>
 </template>
@@ -51,35 +51,55 @@ import axios from 'axios'
 export default {
     data() {
         return {
-
+            userInfo: {
+                user_no: null,
+                user_id: "",
+                user_pwd: "",
+                user_name: "",
+                user_gender: null,
+                user_age: null,
+                join_date: null
+            }
         }
     },
     created() {
-        let searchId = this.$route.query.userId; //받는건 $route 요청하는건 $router
+        let searchId = this.$route.query.userId; //통신 정보 받는건 $route 요청하는건 $router
         this.getUserInfo(searchId);
         console.log(searchId);
     },
     methods: {
+        async getUserInfo(userId) {
+            //http://localhost:3000/users/userId
+            //api/users/admin 이렇게 바뀐다는 것 -> vue.config.js에서 등록함
+
+            let result = await axios.get('/api/users/' + userId).catch(err => { console.log(err) }); // '/api/users/' + userId or  `/api/users/${userId}` 둘 다 사용가능
+            let info = result.data;
+            this.userInfo = info;
+        },
         updateInfo() {
-     
-            if (!this.validation()) return; 
-            let data = this.getSendData(); //반드시 객체 or 배열이여야함(json이 인정하는 포맷)
-            
+            // 1) 유효성 체크
+            if (!this.validation()) return;
+
+            // 2) ajax
+            // 2-1) 실제 보낼 데이터 선별
+            let data = this.getSendData();
+
+            // 2-2) axios 이용해 ajax
             axios
                 .post('/api/users/' + this.userInfo.user_id, data)
                 .then(result => {
                     //3)결과처리
-                    console.log(result);
-                    let user_no = result.data.insertId;
-                    if(user_no == 0){
-                        alert('등록되지 않았습니다.\n 메세지를 확인해주세요\n ${result.data.message}')
-                    }else{
-                        alert(`정상적으로 등록되었습니다.`);
-                        this.userInfo.user_no = user_no; //다시 값을 넣는 것-> 등록 시 회원번호 보여지도록
+                    console.log(result.data);
+                    let user_no = result.data.affectedRows;
+                    if (user_no == 0) {
+                        alert('수정되지 않았습니다.\n 메세지를 확인해주세요\n ${result.data.message}')
+                    } else {
+                        alert(`정상적으로 수정되었습니다.`);
+                        this.$router.push({ path: '/userInfo' , query: {'userId' : this.userInfo.user_id}}); //다시 값을 넣는 것-> 등록 시 회원번호 보여지도록
                     }
                 })
                 .catch(err => console.log(err));
-        },,
+        },
         validation() { //유효성 체크 용
             if (this.userInfo.user_id == "") {
                 alert('아이디가 입력되지 않았습니다');
@@ -96,7 +116,7 @@ export default {
             return true;
         },
         getSendData() {
-            let obj = this.userInfo
+            let obj = this.userInfo;
             let delData = ["user_no", "user_id"];
             let newObj = {};
             let isTargeted = null;
@@ -117,7 +137,7 @@ export default {
             }
             return sendData;
         }
-        
+
     }
 }
 </script>

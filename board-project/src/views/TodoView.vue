@@ -1,6 +1,6 @@
 <template>
     <HeadComponent v-on:save-todo="saveTodo" />
-    <BodyComponent v-bind:list="todoList" @todo-delete="deleteTodo" />
+    <BodyComponent @choose-del="strikeDel" v-bind:list="todoList" @todo-delete="deleteTodo" />
 </template>
 <script>
 import HeadComponent from '../components/HeadComponent.vue'
@@ -14,7 +14,7 @@ export default {
     data() {
         return {
             todoList: [
-                { no: 1, todo: 'Hit the gym', cancelFlag: true },
+                { no: 1, todo: 'Hit the gym', cancelFlag: false },
                 { no: 2, todo: 'Pay bills', cancelFlag: false },
                 { no: 3, todo: 'Meet George', cancelFlag: false },
                 { no: 4, todo: 'Buy eggs', cancelFlag: false },
@@ -28,12 +28,18 @@ export default {
             let idx = this.todoList.length - 1; //마지막데이터 인덱스
             let no = parseInt(this.todoList[idx].no) + 1;
             console.log(idx, no, todo);
-            let newTodo = { no, todo }
+            let newTodo = { no, todo}
             this.todoList.splice(this.todoList.length, 0, newTodo);
         },
         deleteTodo(no) {
             console.log(no);
             this.todoList = this.todoList.filter(todo => todo.no == no ? false : true);
+        },
+        strikeDel(cancelFlag){
+            console.log(cancelFlag);
+            if(cancelFlag == false){
+                this.cancelFlag = true;
+            }
         }
     }
 }
