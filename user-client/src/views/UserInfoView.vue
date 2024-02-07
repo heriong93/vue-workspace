@@ -36,7 +36,7 @@
         <div class="row">
             <button class="btn btn-info col-4" @click="goToUpdate(userInfo.user_id)">수정</button> <!-- 넘어가는 정보가 있을때- 누구의 정보를 수정할건지-->
             <router-link to="/" class="btn btn-success col-4" >목록</router-link> <!--main 링크가 가지고 있는 속성으로 이동. 그냥 이동만 할때-->
-            <button class="btn btn-warning col-4" @click="deleteInfo(userInfo.userId)">삭제</button> <!--axios를 적용시킬 것. -->
+            <button class="btn btn-warning col-4" @click="deleteInfo(userInfo.user_id)">삭제</button> <!--axios를 적용시킬 것. -->
         </div>
     </div>
 </template>
@@ -93,21 +93,24 @@ export default {
 
             let result = await axios.get(`/api/users/${userId}`).catch(err => { console.log(err) }); // '/api/users/' + userId or  `/api/users/${userId}` 둘 다 사용가능
             let info = result.data;
+            //let newDate = this.dateFormat(info.join_date); //db 날짜포멧이랑 맞지않기때문에 변환 
+           // info.join_date = newDate;
             this.userInfo = info;
-        },
-        async goToUpdate(userId){  //해당 아이디 수정 
+        },  
+        async goToUpdate(userId){  //수정폼 컴포넌트 호출
             console.log(userId);
-            this.$router.push({path:'/userUpdate',query: {userId:userId}});
+            this.$router.push({path:'/userForm',query: {"userId":userId}}); //index.js에 있는 path 확인 . query는 필드명: 변수명 
         },
         deleteInfo(userId){ 
             // 서버에 해당 데이터를 삭제
             axios
-            .delete(`/api/users/${userId}`)
+            .delete('/api/users/' + userId)
             .then(result => {
-                if(result.data.affectedRows != 0 && result.data.changedRows == 0){
+                if(result.data.affectedRows != 0 && result.data.changedRows == 0){ //삭제 되는 경우 affectedRows, changedRows 둘 다 수정이 됨
                     alert(`정상적으로 삭제되었습니다.`);
-                    this.$router.push({path : '/'});
+                    this.$router.push({path : '/'}); //삭제는 라우터가 작동해야함. 
                 }else{
+                    console.log(result);
                     alert(`삭제되지 않았습니다.\n메세지를 확인해주세요\n${result.data.message}`)
                 }
                 

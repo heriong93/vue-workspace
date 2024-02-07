@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1>회원 정보 등록</h1>
+        <h1>회원 정보 수정</h1>
         <div class="row">
             <table class="table">
                 <tr>
@@ -34,9 +34,8 @@
                             max="150"></td>
                 </tr>
                 <tr>
-                    <th>가입일자</th>
+                    <th>가입날짜</th>
                     <td class="text-center"><input class="form-control" type="date" v-model="userInfo.join_date"></td>
-                    <!--yyyy-MM-dd로 인식됨. mysql로 넘기기 쉬움-->
                 </tr>
             </table>
         </div>
@@ -69,12 +68,22 @@ export default {
     },
     methods: {
         async getUserInfo(userId) {
-            //http://localhost:3000/users/userId
-            //api/users/admin 이렇게 바뀐다는 것 -> vue.config.js에서 등록함
-
             let result = await axios.get('/api/users/' + userId).catch(err => { console.log(err) }); // '/api/users/' + userId or  `/api/users/${userId}` 둘 다 사용가능
             let info = result.data;
+            let newDate = this.dateFormat(info.join_date);
+            info.join_date = newDate;
             this.userInfo = info;
+        },
+        dateFormat(value){
+            let result = null;
+            if(value != null){
+                let date = new Date(value);
+                let year = date.getFullYear();
+                let month = ('0' + (date.getMonth()+1)).slice(-2);
+                let day = ('0' + date.getDate()).slice(-2);
+                result = `${year}-${month}-${day}`;
+            }
+            return result;
         },
         updateInfo() {
             // 1) 유효성 체크
@@ -86,7 +95,7 @@ export default {
 
             // 2-2) axios 이용해 ajax
             axios
-                .post('/api/users/' + this.userInfo.user_id, data)
+                .put('/api/users/' + this.userInfo.user_id, data)
                 .then(result => {
                     //3)결과처리
                     console.log(result.data);
@@ -101,10 +110,6 @@ export default {
                 .catch(err => console.log(err));
         },
         validation() { //유효성 체크 용
-            if (this.userInfo.user_id == "") {
-                alert('아이디가 입력되지 않았습니다');
-                return false;
-            }
             if (this.userInfo.user_pwd == "") {
                 alert('비밀번호가 입력되지 않았습니다');
                 return false;
@@ -117,7 +122,7 @@ export default {
         },
         getSendData() {
             let obj = this.userInfo;
-            let delData = ["user_no", "user_id"];
+            let delData = ["user_no", "user_id"]; //업데이트 되면 안되는 대상
             let newObj = {};
             let isTargeted = null;
             for (let field in obj) {

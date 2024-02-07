@@ -60,9 +60,12 @@ export default {
                 user_name: "",
                 user_gender: null,
                 user_age: null, //데이터 형식이 달라서 공백 인식x. 사용자 입력 전까지 빈 공간으로 유지하기 위해 null로 지정
-                join_date: null
+                join_date: this.today()
             }
         }
+    },
+    created(){
+        this.userInfo.join_date = this.getToday();
     },
     methods: {
         insertInfo() {
@@ -125,6 +128,14 @@ export default {
                 "param": newObj
             }
             return sendData;
+        },
+        getToday(){
+            let date = new Date();
+            let year = date.getFullYear();
+            let month = ('0' + (date.getMonth()+1)).slice(-2);
+            let day = ('0' + date.getDate()).slice(-2);
+            let result = `${year}-${month}-${day}`;
+            return result;
         }
            
     }
